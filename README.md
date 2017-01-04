@@ -19,7 +19,7 @@ While it is designed to run on a Raspberry Pi (hence the name) with an SPI touch
 
 * Python 3
 * [python-rtmidi](https://github.com/SpotlightKid/python-rtmidi)
-* pyqt4
+* PyQt4 or PyQt5 (runs on both, for now, but I will be dropping PyQt4 support if there is ever a conflict)
 * [pyalsaaudio](https://github.com/larsimmisch/pyalsaaudio)
 
 # Operating modes

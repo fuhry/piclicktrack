@@ -21,10 +21,13 @@ def munge_widget_size(target):
 	for c in target.children():
 		if isinstance(c, QtGui.QWidget):
 			c.setSizePolicy(policy)
+
+		if isinstance(c, QtGui.QPushButton):
+			c.setMinimumSize(QtCore.QSize(1, 1))
 		
 		if isinstance(c, QtGui.QPushButton) or isinstance(c, QtGui.QLabel):
 			font = c.font()
-			font.setPixelSize(20)
+			font.setPixelSize(14)
 			c.setFont(font)
 		
 		if isinstance(c, QtGui.QLabel):
