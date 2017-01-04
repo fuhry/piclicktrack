@@ -2,7 +2,7 @@ import threading
 import rtmidi
 import time
 import wave
-import ossaudiodev
+import alsaaudio
 import os
 import re
 from ossaudiodev import AFMT_S16_NE
@@ -280,38 +280,45 @@ Output thread for the click sound that will be played through the speakers.
 """
 class ClickSound(threading.Thread):
 	queue = None
-	
+
 	def __init__(self):
 		super(self.__class__, self).__init__()
 		self.queue = Queue()
-		
+
 	def start(self):
 		super(self.__class__, self).start()
-	
+
 	def run(self):
 		wavfile = wave.open(os.path.dirname(os.path.realpath(__file__)) + '/data/click.wav', 'rb')
 		(num_channels, sample_width, framerate, num_frames, comptype, compname) = wavfile.getparams()
 		data = wavfile.readframes(num_frames)
 		wavfile.close()
 		i = 0
-		
-		dsp = ossaudiodev.open('/dev/dsp', 'w')
-		dsp.setparameters(ossaudiodev.AFMT_S16_NE, num_channels, framerate)
-		
+
+		alsadev = alsaaudio.PCM()
+		alsadev.setperiodsize(num_frames)
+		if sample_width == 1:
+			alsadev.setformat(alsaaudio.PCM_FORMAT_U8)
+		elif sample_width == 2:
+			alsadev.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+		elif sample_width == 3:
+			alsadev.setformat(alsaaudio.PCM_FORMAT_S24_LE)
+		elif sample_width == 4:
+			alsadev.setformat(alsaaudio.PCM_FORMAT_S32_LE)
+
 		while True:
 			msg = self.queue.get()
 			if msg == 'click':
 				if i % 24 == 0:
-					dsp.write(data)
-					dsp.flush()
-				
+					alsadev.write(data)
+
 				i += 1
 			elif msg == 'start':
 				i = 0
 			elif msg == 'stop':
-				dsp.close()
+				alsadev.close()
 				return
-	
+
 	def stop(self):
 		self.queue.put('stop')
 		self.join()

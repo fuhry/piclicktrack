@@ -18,8 +18,9 @@ While it is designed to run on a Raspberry Pi (hence the name) with an SPI touch
 ## Dependencies
 
 * Python 3
-* rtmidi python module
+* [python-rtmidi](https://github.com/SpotlightKid/python-rtmidi)
 * pyqt4
+* [pyalsaaudio](https://github.com/larsimmisch/pyalsaaudio)
 
 # Operating modes
 
