@@ -1,6 +1,11 @@
-from PyQt4 import QtGui, QtCore
 import sys
 import rtmidi
+
+try:
+    from PyQt5 import QtWidgets as QtGui
+    from PyQt5 import QtCore
+except ImportError:
+    from PyQt4 import QtGui, QtCore
 
 import clicktrack.master as ctmaster
 from clicktrack.dispatcher import ClickRouter, TimedDispatcher, MIDIInputDispatcher
