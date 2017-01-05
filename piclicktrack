@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
-
+import sys
 import clicktrack
-clicktrack.run()
+
+clicktrack.run(argv=sys.argv)

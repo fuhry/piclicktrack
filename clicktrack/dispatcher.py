@@ -5,7 +5,6 @@ import wave
 import alsaaudio
 import os
 import re
-from ossaudiodev import AFMT_S16_NE
 from queue import Queue
 
 MSG_CLOCK_START = 0xFA
@@ -28,6 +27,7 @@ class ClickRouter:
 	dispatcher = None
 	started = False
 	debounce_ports = []
+	multiplier = 1
 	
 	tempo = 120.0
 	input_port = None
@@ -53,7 +53,7 @@ class ClickRouter:
 			self._open_port(i)
 		
 		# add a thread for playing the audible click
-		self.threads.append(ClickSound())
+		self.threads.append(ClickSound(self.multiplier))
 		
 		if callback:
 			self.threads.append(ClickCallback(callback))
@@ -114,10 +114,14 @@ class ClickRouter:
 	"""
 	Change the tempo. Only valid for the timed dispatcher.
 	"""
-	def set_tempo(self, tempo):
+	def set_tempo(self, tempo, multiplier=1):
 		self.tempo = tempo
+		self.multiplier = multiplier
 		if self.dispatcher:
 			self.dispatcher.set_tempo(tempo)
+		
+		for t in self.threads:
+			t.set_multiplier(multiplier)
 	
 	"""
 	Set the input port. Only valid for the MIDI input dispatcher.
@@ -274,22 +278,44 @@ class ClickOutput(threading.Thread):
 		self.queue.put('stop')
 		self.join()
 		self.port.send_message([MSG_CLOCK_STOP])
+	
+	def set_multiplier(self, multiplier):
+		pass
 
 """
 Output thread for the click sound that will be played through the speakers.
 """
 class ClickSound(threading.Thread):
 	queue = None
+	multiplier = 1
 
-	def __init__(self):
+	def __init__(self, multiplier):
 		super(self.__class__, self).__init__()
 		self.queue = Queue()
+		self.multiplier = multiplier
 
 	def start(self):
 		super(self.__class__, self).start()
 
 	def run(self):
-		wavfile = wave.open(os.path.dirname(os.path.realpath(__file__)) + '/data/click.wav', 'rb')
+		# search the system for a click file
+		paths = [
+			os.path.dirname(os.path.realpath(__file__)) + '/data/click.wav',
+			'/usr/local/share/piclicktrack/click.wav',
+			'/usr/share/piclicktrack/click.wav'
+		]
+		
+		path = None
+		
+		for p in paths:
+			print(p)
+			if os.path.exists(p):
+				path = p
+		
+		if not path:
+			return
+		
+		wavfile = wave.open(path, 'rb')
 		(num_channels, sample_width, framerate, num_frames, comptype, compname) = wavfile.getparams()
 		data = wavfile.readframes(num_frames)
 		wavfile.close()
@@ -309,7 +335,7 @@ class ClickSound(threading.Thread):
 		while True:
 			msg = self.queue.get()
 			if msg == 'click':
-				if i % 24 == 0:
+				if i % (24/self.multiplier) == 0:
 					alsadev.write(data)
 
 				i += 1
@@ -322,6 +348,9 @@ class ClickSound(threading.Thread):
 	def stop(self):
 		self.queue.put('stop')
 		self.join()
+	
+	def set_multiplier(self, multiplier):
+		self.multiplier = multiplier
 
 """
 Output thread for a custom callback
@@ -349,3 +378,6 @@ class ClickCallback(threading.Thread):
 	def stop(self):
 		self.queue.put('stop')
 		self.join()
+	
+	def set_multiplier(self, multiplier):
+		pass

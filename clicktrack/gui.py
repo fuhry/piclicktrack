@@ -27,7 +27,7 @@ def munge_widget_size(target):
 		
 		if isinstance(c, QtGui.QPushButton) or isinstance(c, QtGui.QLabel):
 			font = c.font()
-			font.setPixelSize(14)
+			font.setPixelSize(20)
 			c.setFont(font)
 		
 		if isinstance(c, QtGui.QLabel):
@@ -121,6 +121,7 @@ class MasterMode(QtGui.QWidget):
 	song_lbl = None
 	tempo_lbl = None
 	
+	x2_btn = None
 	start_btn = None
 	
 	clicker = None
@@ -190,8 +191,13 @@ class MasterMode(QtGui.QWidget):
 		
 		layout.addLayout(tempo_row)
 		
-		# row 3: start/stop button
+		# row 3: start/stop button and multiplier
 		start_row = QtGui.QHBoxLayout()
+		
+		self.x2_btn = QtGui.QPushButton('x2')
+		self.x2_btn.setCheckable(True)
+		self.x2_btn.clicked.connect(self.set_multiplier)
+		start_row.addWidget(self.x2_btn)
 		
 		self.start_btn = QtGui.QPushButton("I don't know my state")
 		self.start_btn.clicked.connect(self.toggle)
@@ -202,6 +208,11 @@ class MasterMode(QtGui.QWidget):
 		
 		self.setLayout(layout)
 		munge_widget_size(self)
+		
+		p = self.start_btn.sizePolicy()
+		p.setHorizontalStretch(4)
+		self.start_btn.setSizePolicy(p)
+		
 		self._redraw()
 	
 	def start(self):
@@ -225,7 +236,8 @@ class MasterMode(QtGui.QWidget):
 	def _redraw(self):
 		self.song_lbl.setText("Song %d/%d" % (self.master.get_song() + 1, self.master.count_songs() + 1))
 		self.tempo_lbl.setText("%d" % (self.master.get_tempo()))
-		self.clicker.set_tempo(float(self.master.get_tempo()))
+		self.x2_btn.setChecked(self.master.get_multiplier() == 2)
+		self.clicker.set_tempo(float(self.master.get_tempo()), self.master.get_multiplier())
 		
 	def _errmsg(self, exception):
 		mbox = QtGui.QMessageBox()
@@ -293,6 +305,13 @@ class MasterMode(QtGui.QWidget):
 			self.master.change_tempo(10)
 		except ctmaster.ClickMasterError as e:
 			self._errmsg(e)
+		self._redraw()
+	
+	@QtCore.pyqtSlot()
+	def set_multiplier(self):
+		multiplier = 2 if self.x2_btn.isChecked() else 1
+		print("setting multiplier to %d" % (multiplier))
+		self.master.set_multiplier(multiplier)
 		self._redraw()
 	
 
@@ -429,12 +448,15 @@ class MainUI:
 	"""
 	Run the application.
 	"""
-	def run(self):
-		geom = self.app.desktop().screenGeometry()
-		if geom.width() <= 480 and geom.height() <= 320:
+	def run(self, window_mode='auto'):
+		if window_mode == 'auto':
+			geom = self.app.desktop().screenGeometry()
+			window_mode = 'fullscreen' if geom.width() <= 480 and geom.height() <= 320 else 'windowed'
+			
+		if window_mode == 'fullscreen':
 			self.main_widget.showFullScreen()
 		else:
-			self.main_widget.resize(480, 320)
+			self.main_widget.resize(480, 280)
 			self.main_widget.show()
 		
 		result = self.app.exec_()

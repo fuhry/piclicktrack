@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=PiClickTrack
+Comment=Metronome with MIDI sync
+Path=/usr/bin
+Exec=piclicktrack
+Categories=AudioVideo;Qt;Audio;MIDI
+Type=Application

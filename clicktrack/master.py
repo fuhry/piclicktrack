@@ -52,6 +52,18 @@ class ClickMaster:
 		return self.song_index
 	
 	"""
+	Change the click multiplier of the current song
+	"""
+	def set_multiplier(self, multiplier):
+		return self.songs[self.song_index].set_multiplier(multiplier)
+	
+	"""
+	Get the click multiplier of the current song
+	"""
+	def get_multiplier(self):
+		return self.songs[self.song_index].get_multiplier()
+	
+	"""
 	Get number of songs - 1
 	"""
 	def count_songs(self):
@@ -62,6 +74,7 @@ Back-end class for clicktrack songs
 """
 class Song:
 	tempo = 120
+	multiplier = 1
 	
 	def __init__(self):
 		pass
@@ -74,6 +87,12 @@ class Song:
 	
 	def get_tempo(self):
 		return self.tempo
+	
+	def set_multiplier(self, multiplier):
+		self.multiplier = multiplier
+	
+	def get_multiplier(self):
+		return self.multiplier
 
 """
 Tempo detector

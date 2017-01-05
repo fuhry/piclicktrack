@@ -32,9 +32,11 @@ setup(
 	url='https://github.com/fuhry/piclicktrack',
 	packages=['clicktrack'],
 	install_requires=[
-		'PyQt5',
 		'python-rtmidi',
 		'pyalsaaudio',
 		],
 	scripts=['piclicktrack'],
+	package_data={
+		'clicktrack': ['data/*']
+	}
 )
