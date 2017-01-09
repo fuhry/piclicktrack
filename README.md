@@ -2,7 +2,7 @@
 
 I am quite astonished and frustrated at the state of metronome apps in the world today. It seems the vast majority of them are written by people who don't understand schedulers, `usleep()`, or jitter.
 
-My keyboards also have shitty MIDI implementations that do not forward clock events, and their internal clocks are (unsurprisingly) also inaccurate (thanks Nord!). So for some time, I have been desperately searching for a way to get everything synced up to real time and found absolutely nothing.
+My keyboards also have demented MIDI implementations that do not forward clock events, and their internal clocks are (unsurprisingly) also inaccurate (thanks Nord!). So for some time, I have been desperately searching for a way to get everything synced up to real time and found absolutely nothing.
 
 So here you have it: piclicktrack.
 
